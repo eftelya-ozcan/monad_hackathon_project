@@ -143,16 +143,40 @@ export const shortAddress = (addr) =>
   addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
 
 /**
- * UID stringini kontratın beklediği bytes32 chipHash'e çevirir.
- * ethers v5: keccak256 + utils.toUtf8Bytes
+ * Herhangi bir string veya hex değeri kontratın beklediği
+ * geçerli bir bytes32 değerine dönüştürür.
+ *
+ * Kurallar:
+ *  - Zaten 0x + 64 hex karakter ise olduğu gibi döner (lowercase).
+ *  - 0x + 64 hex'ten kısa bir hex string ise sola sıfır pad'lenir (ör. adres).
+ *  - Diğer tüm string'ler keccak256 hash'lenerek bytes32'ye çevrilir.
  */
-export function chipHashFromUid(uid) {
-  if (!uid) return null;
-  const clean = String(uid).trim();
-  if (/^0x[0-9a-fA-F]{64}$/.test(clean)) return clean.toLowerCase();
+export function formatToBytes32(value) {
+  if (!value) throw new Error("formatToBytes32: boş değer");
+
+  const clean = String(value).trim();
+
+  // Zaten tam bytes32 hex mi?
+  if (/^0x[0-9a-fA-F]{64}$/.test(clean)) {
+    return clean.toLowerCase();
+  }
+
+  // 0x prefix'li ama 64 hex'ten kısa (ör. adres, kısa hash) — sola pad'le
+  if (/^0x[0-9a-fA-F]{1,63}$/.test(clean)) {
+    return ("0x" + clean.slice(2).padStart(64, "0")).toLowerCase();
+  }
+
+  // Diğer tüm durumlar (sıradan string, UID, vs.) — keccak256 hash'le
   return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(clean.toLowerCase()));
 }
 
+/**
+ * Geriye dönük uyumluluk için chipHashFromUid,
+ * artık formatToBytes32'nin alias'ı.
+ */
+export const chipHashFromUid = formatToBytes32;
+
+// ─── Ağ Yönetimi ─────────────────────────────────────────────────────────────
 async function ensureMonadNetwork() {
   if (!window.ethereum) {
     throw new Error("MetaMask veya uyumlu bir Web3 cüzdanı bulunamadı.");
@@ -174,6 +198,7 @@ async function ensureMonadNetwork() {
   }
 }
 
+// ─── Cüzdan Bağlantısı ───────────────────────────────────────────────────────
 export async function connectWallet() {
   if (!window.ethereum) {
     throw new Error(
@@ -181,34 +206,39 @@ export async function connectWallet() {
     );
   }
   await ensureMonadNetwork();
-  // ethers v5: Web3Provider
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const accounts = await provider.send("eth_requestAccounts", []);
   return { address: accounts[0], provider };
 }
 
+/** Dashboard.js'in import ettiği alias */
 export const connectAndSwitchToMonad = connectWallet;
 
-// Salt okunur — ethers v5: JsonRpcProvider
+// ─── Kontrat Örnekleri ────────────────────────────────────────────────────────
+
+/** Salt okunur — imza gerektirmeyen sorgular için */
 function getReadOnlyContract() {
   const provider = new ethers.providers.JsonRpcProvider(MONAD_TESTNET.rpcUrls[0]);
   return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 }
 
+/** İmzalı — işlem gönderen fonksiyonlar için */
 async function getSignerContract() {
   await ensureMonadNetwork();
-  // ethers v5: Web3Provider + getSigner()
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 }
 
+// ─── Veri Haritalama ──────────────────────────────────────────────────────────
 function mapContractComponent(raw, chipHash, uidDisplay, txHash) {
   const statusIndex = Number(raw.status);
-  const statusLabel = STATUS_ENUM_LABELS[statusIndex] || "Bilinmiyor";
+  const statusLabel = STATUS_ENUM_LABELS[statusIndex] ?? "Bilinmiyor";
+
   const productionDateMs = raw.productionDate
     ? Number(raw.productionDate.toString()) * 1000
     : null;
+
   const pcbId =
     raw.associatedPcbId && raw.associatedPcbId !== "None"
       ? raw.associatedPcbId
@@ -237,29 +267,78 @@ function mapContractComponent(raw, chipHash, uidDisplay, txHash) {
   };
 }
 
-export async function verifyComponentOnChain(uidQuery) {
-  const chipHash = chipHashFromUid(uidQuery);
-  if (!chipHash) return null;
+// ─── Okuma Fonksiyonları ──────────────────────────────────────────────────────
+
+/**
+ * Blockchain üzerinde komponent doğrular.
+ *
+ * @param {string} chipHashOrUid  - formatToBytes32 ile hazırlanmış bytes32 değeri
+ *                                  VEYA herhangi bir UID string (fonksiyon içinde dönüştürülür).
+ * @returns {object|null}          - Bulunan komponent objesi veya null
+ */
+export async function verifyComponentOnChain(chipHashOrUid) {
+  if (!chipHashOrUid) return null;
+
+  // Eğer gelen değer henüz bytes32 formatında değilse dönüştür
+  let chipHash;
+  try {
+    chipHash = formatToBytes32(chipHashOrUid);
+  } catch {
+    return null;
+  }
 
   try {
     const contract = getReadOnlyContract();
+
+    // Önce kayıtlı mı kontrol et — kayıtsız adreslere verifyComponent çağırmak
+    // "External transactions to internal accounts cannot include data" hatasına yol açabilir.
+    let registered = false;
+    try {
+      registered = await contract.isRegistered(chipHash);
+    } catch {
+      // isRegistered başarısız olursa doğrudan verifyComponent'i dene
+      registered = true;
+    }
+
+    if (!registered) return null;
+
     const raw = await contract.verifyComponent(chipHash);
 
+    // partNumber boşsa kayıt yok demektir
+    if (!raw.partNumber) return null;
+
+    // TX hash'i bulmaya çalış (opsiyonel)
     let txHash = null;
     try {
       const filter = contract.filters.ComponentRegistered(chipHash);
       const logs = await contract.queryFilter(filter, 0, "latest");
       if (logs.length > 0) txHash = logs[0].transactionHash;
-    } catch (_) {
-      /* opsiyonel log taraması */
+    } catch {
+      /* opsiyonel — hata olursa geç */
     }
 
-    return mapContractComponent(raw, chipHash, uidQuery, txHash);
-  } catch (_err) {
+    return mapContractComponent(raw, chipHash, chipHashOrUid, txHash);
+  } catch {
     return null;
   }
 }
 
+// ─── Yazma Fonksiyonları ──────────────────────────────────────────────────────
+
+/**
+ * Yeni komponent kaydeder.
+ *
+ * Kontrat imzası:
+ *   registerComponent(bytes32 _chipHash, string _partNumber, string _batchNo,
+ *                     string _productionFacility, string _qualityTest)
+ *
+ * @param {object} params
+ * @param {string} params.uid                - bytes32 formatında chipHash (formatToBytes32 ile hazırlanmış)
+ * @param {string} params.partNumber         - Parça numarası
+ * @param {string} params.batchNo            - Batch numarası
+ * @param {string} params.productionFacility - Üretim tesisi
+ * @param {string} params.qualityTest        - Kalite/sertifika notu
+ */
 export async function registerComponentOnChain({
   uid,
   partNumber,
@@ -270,8 +349,15 @@ export async function registerComponentOnChain({
   if (!window.ethereum) {
     throw new Error("Cüzdan bulunamadı. Lütfen Monad cüzdanınızı bağlayın.");
   }
-  const chipHash = chipHashFromUid(uid);
+
+  // uid zaten formatToBytes32 ile hazırlanmış olmalı (Dashboard.js'den geliyor)
+  // Yine de savunma amaçlı tekrar doğrula
+  const chipHash = /^0x[0-9a-fA-F]{64}$/.test(uid)
+    ? uid.toLowerCase()
+    : formatToBytes32(uid);
+
   const contract = await getSignerContract();
+
   const tx = await contract.registerComponent(
     chipHash,
     partNumber,
@@ -279,52 +365,51 @@ export async function registerComponentOnChain({
     productionFacility,
     qualityTest
   );
-  const receipt = await tx.wait();
-  return { txHash: receipt?.transactionHash || tx.hash, chipHash };
-}
 
-// ─── Distribütör / Fabrika İşlemleri ─────────────────────────────────────────
+  const receipt = await tx.wait();
+  return { txHash: receipt?.transactionHash ?? tx.hash, chipHash };
+}
 
 /**
  * Bir parçanın sahipliğini başka bir adrese devreder.
  * Kontratta: transferOwnership(bytes32 _chipHash, address _to)
- * Rol: Distributor veya Manufacturer
  */
 export async function transferOwnershipOnChain({ uid, toAddress }) {
   if (!window.ethereum) throw new Error("Cüzdan bulunamadı.");
   if (!ethers.utils.isAddress(toAddress))
     throw new Error("Geçersiz hedef adres formatı.");
-  const chipHash = chipHashFromUid(uid);
+
+  const chipHash = formatToBytes32(uid);
   const contract = await getSignerContract();
   const tx = await contract.transferOwnership(chipHash, toAddress);
   const receipt = await tx.wait();
-  return { txHash: receipt?.transactionHash || tx.hash };
+  return { txHash: receipt?.transactionHash ?? tx.hash };
 }
 
 /**
  * Parçayı bir PCB'ye monte eder.
  * Kontratta: mountToPcb(bytes32 _chipHash, string _pcbId)
- * Rol: Factory
  */
 export async function mountToPcbOnChain({ uid, pcbId }) {
   if (!window.ethereum) throw new Error("Cüzdan bulunamadı.");
-  const chipHash = chipHashFromUid(uid);
+
+  const chipHash = formatToBytes32(uid);
   const contract = await getSignerContract();
   const tx = await contract.mountToPcb(chipHash, pcbId);
   const receipt = await tx.wait();
-  return { txHash: receipt?.transactionHash || tx.hash };
+  return { txHash: receipt?.transactionHash ?? tx.hash };
 }
 
 /**
  * Parçayı geri çağırır (Recalled durumuna alır).
  * Kontratta: recallComponent(bytes32 _chipHash)
- * Rol: Manufacturer veya admin
  */
 export async function recallComponentOnChain({ uid }) {
   if (!window.ethereum) throw new Error("Cüzdan bulunamadı.");
-  const chipHash = chipHashFromUid(uid);
+
+  const chipHash = formatToBytes32(uid);
   const contract = await getSignerContract();
   const tx = await contract.recallComponent(chipHash);
   const receipt = await tx.wait();
-  return { txHash: receipt?.transactionHash || tx.hash };
+  return { txHash: receipt?.transactionHash ?? tx.hash };
 }

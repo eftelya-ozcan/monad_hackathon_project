@@ -36,8 +36,12 @@ import dataset from "../dataset.json";
 import QRScanner from "./QRScanner";
 import {
   connectWallet,
+  connectAndSwitchToMonad,
   shortAddress,
   MONAD_TESTNET,
+  CONTRACT_ADDRESS,
+  CONTRACT_ABI,
+  formatToBytes32,
   verifyComponentOnChain,
   registerComponentOnChain,
   transferOwnershipOnChain,
@@ -344,7 +348,10 @@ const EngineerTab = () => {
 
       const t0 = performance.now();
 
-      verifyComponentOnChain(q)
+      // ── GÜNCELLEME: formatToBytes32 ile bytes32'ye çevir, sonra zinciri sorgula ──
+      const bytes32Hash = formatToBytes32(q);
+
+      verifyComponentOnChain(bytes32Hash)
         .then((chainComponent) => {
           if (chainComponent) {
             const t1 = performance.now();
@@ -356,6 +363,7 @@ const EngineerTab = () => {
             return;
           }
 
+          // Blockchain'de bulunamazsa dataset'e düş
           setTimeout(() => {
             const found = dataset.filter(
               (item) =>
@@ -376,6 +384,7 @@ const EngineerTab = () => {
           }, 180 + Math.random() * 80);
         })
         .catch(() => {
+          // Hata durumunda da dataset'e düş
           setTimeout(() => {
             const found = dataset.filter(
               (item) =>
@@ -661,13 +670,28 @@ const ManufacturerTab = ({ walletAddress }) => {
     }
     setSubmitting(true);
     try {
-      const productionFacility = [form.manufacturer, form.fab_location].filter(Boolean).join(" — ");
-      const qualityTest = [form.component_type, form.process_node, form.compliance.join(", ")]
+      // ── GÜNCELLEME: UID'yi formatToBytes32 ile bytes32'ye çevir ──
+      const bytes32Hash = formatToBytes32(form.uid);
+
+      // productionFacility = üretici + fabrika konumu birleşimi
+      const productionFacility = [form.manufacturer, form.fab_location]
+        .filter(Boolean)
+        .join(" — ");
+
+      // qualityTest = komponent tipi + üretim süreci + uyumluluk sertifikaları
+      const qualityTest = [
+        form.component_type,
+        form.process_node,
+        form.compliance.join(", "),
+      ]
         .filter(Boolean)
         .join(" | ");
 
+      // ── GÜNCELLEME: Yeni kontrat imzasına göre tam 5 parametre, doğru sırayla ──
+      // registerComponent(bytes32 _chipHash, string _partNumber, string _batchNo,
+      //                   string _productionFacility, string _qualityTest)
       const { txHash: realTxHash } = await registerComponentOnChain({
-        uid: form.uid,
+        uid: bytes32Hash,      // bytes32 formatında hash
         partNumber: form.part_number,
         batchNo: form.batch_no,
         productionFacility,
@@ -988,12 +1012,12 @@ const ManufacturerTab = ({ walletAddress }) => {
 
 // ─── Distributor / Factory Tab ────────────────────────────────────────────────
 const DistributorTab = ({ walletAddress }) => {
-  const [activeAction, setActiveAction] = useState("transfer"); // transfer | mount | recall
+  const [activeAction, setActiveAction] = useState("transfer");
   const [uid, setUid] = useState("");
   const [toAddress, setToAddress] = useState("");
   const [pcbId, setPcbId] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [txResult, setTxResult] = useState(null); // { txHash, action }
+  const [txResult, setTxResult] = useState(null);
   const [error, setError] = useState(null);
 
   const actions = [
@@ -1174,7 +1198,6 @@ const DistributorTab = ({ walletAddress }) => {
       className="rounded-2xl overflow-hidden"
       style={{ background: "rgba(20, 0, 50, 0.85)", border: "1px solid rgba(139, 92, 246, 0.25)" }}
     >
-      {/* Header */}
       <div
         className="px-6 py-4 border-b flex items-center justify-between"
         style={{ borderColor: "rgba(139,92,246,0.2)" }}
@@ -1208,7 +1231,6 @@ const DistributorTab = ({ walletAddress }) => {
       </div>
 
       <div className="p-6 space-y-5">
-        {/* Action Selector */}
         <div>
           <label className="block text-xs font-medium mb-2" style={{ color: "#a78bfa" }}>
             İşlem Türü
@@ -1241,7 +1263,6 @@ const DistributorTab = ({ walletAddress }) => {
               </button>
             ))}
           </div>
-          {/* Action description */}
           <div
             className="mt-3 px-3 py-2 rounded-xl flex items-start gap-2"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
@@ -1251,7 +1272,6 @@ const DistributorTab = ({ walletAddress }) => {
           </div>
         </div>
 
-        {/* UID Input */}
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
             Komponent UID / Hash *
@@ -1266,7 +1286,6 @@ const DistributorTab = ({ walletAddress }) => {
           />
         </div>
 
-        {/* Transfer: hedef adres */}
         {activeAction === "transfer" && (
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
@@ -1286,7 +1305,6 @@ const DistributorTab = ({ walletAddress }) => {
           </div>
         )}
 
-        {/* Mount: PCB ID */}
         {activeAction === "mount" && (
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
@@ -1303,7 +1321,6 @@ const DistributorTab = ({ walletAddress }) => {
           </div>
         )}
 
-        {/* Recall: uyarı banner */}
         {activeAction === "recall" && (
           <div
             className="flex items-start gap-3 p-4 rounded-xl"
@@ -1320,7 +1337,6 @@ const DistributorTab = ({ walletAddress }) => {
           </div>
         )}
 
-        {/* Error */}
         {error && (
           <div
             className="flex items-start gap-2 p-3 rounded-xl"
@@ -1331,7 +1347,6 @@ const DistributorTab = ({ walletAddress }) => {
           </div>
         )}
 
-        {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={submitting || !uid.trim()}
