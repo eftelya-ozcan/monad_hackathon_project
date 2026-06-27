@@ -1,0 +1,262 @@
+[
+  {
+    "uid": "0x3a9f2c1b4e8d7f6a5c3b2e1d0f9a8b7c6e5d4f3a2b1c0e9d8f7a6b5c4d3e2f1",
+    "part_number": "STM32F407VGT6",
+    "component_type": "Microcontroller",
+    "manufacturer": "STMicroelectronics",
+    "batch_no": "BATCH-2024-ST-0912",
+    "status": "In Stock",
+    "associated_pcb_id": "PCB-AVIONICS-7734",
+    "monad_tx": "0xabc123def456789012345678901234567890abcdef1234567890abcdef123456",
+    "registered_at": "2024-11-15T09:22:11Z",
+    "history": [
+      "[2024-09-01 08:00] 🏭 Üretim tamamlandı — ST Agrate Brianza Fabrikası, İtalya",
+      "[2024-09-03 14:30] 📦 Toplu paketleme — Batch BATCH-2024-ST-0912 mühürlendi",
+      "[2024-09-10 06:45] ✈️ Nakliye başladı — Milano → Frankfurt lojistik merkezi",
+      "[2024-09-12 11:20] 🔍 Kalite kontrol geçti — IPC-A-610 Class 3 standart",
+      "[2024-09-15 09:00] 📥 Depo girişi — WH-EMEA-04, Frankfurt",
+      "[2024-10-02 13:10] 🛒 Satın alma siparişi — Müşteri: AeroTech GmbH",
+      "[2024-11-15 09:22] ✅ Monad Testnet'e hash yazıldı — TX: 0xabc123...3456"
+    ]
+  },
+  {
+    "uid": "0xd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+    "part_number": "XC7K325T-2FFG900I",
+    "component_type": "FPGA",
+    "manufacturer": "Xilinx (AMD)",
+    "batch_no": "BATCH-2024-XI-0445",
+    "status": "Mounted",
+    "associated_pcb_id": "PCB-RADAR-SYS-2201",
+    "monad_tx": "0xdef456abc789012345678901234567890abcdef1234567890abcdef123456789",
+    "registered_at": "2024-10-28T14:55:33Z",
+    "history": [
+      "[2024-08-10 07:00] 🏭 Üretim — AMD San Jose, California, ABD",
+      "[2024-08-20 10:00] 📦 Batch BATCH-2024-XI-0445 kilitlendi ve mühürlendi",
+      "[2024-09-01 08:30] ✈️ Nakliye — San Jose → Singapore hub",
+      "[2024-09-05 16:00] 🔍 Gümrük kontrolü geçildi — Changi Freeport",
+      "[2024-09-10 09:00] 📥 Depo — WH-APAC-12, Singapur",
+      "[2024-10-15 11:30] 🛒 Sipariş — Müşteri: DefenseAI Korea Ltd.",
+      "[2024-10-28 14:55] ✅ Monad Testnet'e hash yazıldı — TX: 0xdef456...6789",
+      "[2024-11-10 08:20] 🔧 PCB-RADAR-SYS-2201 üzerine monte edildi"
+    ]
+  },
+  {
+    "uid": "0xf1e2d3c4b5a6978869504132a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
+    "part_number": "TMS320C6748EZWTD3",
+    "component_type": "DSP Processor",
+    "manufacturer": "Texas Instruments",
+    "batch_no": "BATCH-2024-TI-1823",
+    "status": "In Transit",
+    "associated_pcb_id": "PCB-TELECOM-4499",
+    "monad_tx": "0x789abc012def345678901234567890abcdef1234567890abcdef12345678901",
+    "registered_at": "2024-12-01T07:10:00Z",
+    "history": [
+      "[2024-10-05 06:00] 🏭 Üretim — TI Chengdu Fabrikası, Çin",
+      "[2024-10-12 09:00] 📦 Batch BATCH-2024-TI-1823 paketlendi",
+      "[2024-10-20 15:00] ✈️ Kargo — Chengdu → Amsterdam Schiphol",
+      "[2024-10-23 11:00] 🔍 AB gümrük geçişi tamamlandı",
+      "[2024-12-01 07:10] ✅ Monad Testnet'e hash yazıldı — TX: 0x789abc...8901",
+      "[2024-12-01 10:00] 🚚 Teslimat aşamasında — ETA: 3 iş günü"
+    ]
+  },
+  {
+    "uid": "0x⚠️HASH_MISMATCH⚠️_2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+    "part_number": "STM32F407VGT6",
+    "component_type": "Microcontroller",
+    "manufacturer": "UNKNOWN / Şüpheli Kaynak",
+    "batch_no": "BATCH-????-XX-0000",
+    "status": "🔴 DOĞRULANAMADI — SAHTE ÜRÜN ALARMI",
+    "associated_pcb_id": "PCB-AUTOMOTIVE-9981",
+    "monad_tx": null,
+    "registered_at": null,
+    "history": [
+      "[2024-11-20 03:44] ⚠️ Blockchain doğrulaması BAŞARISIZ — Hash eşleşmedi",
+      "[2024-11-20 03:45] 🚨 STMicroelectronics orijinal UID veritabanıyla karşılaştırma: UYUMSUZ",
+      "[2024-11-20 03:46] 🔴 Parça numarası markalaması gerçek ST çip geometrisiyle örtüşmüyor",
+      "[2024-11-20 04:00] 📡 Alarm: Güvenlik ekibi bilgilendirildi — INC-2024-1120-001",
+      "[2024-11-20 08:30] 🔒 Parti karantinaya alındı — WH-HOLD-ZONE-3",
+      "[2024-11-21 09:00] ❌ Sahte ürün teyit edildi — Adli analiz raporu: FR-2024-337"
+    ]
+  },
+  {
+    "uid": "0xRECALLED_BY_MFR_c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
+    "part_number": "ADSP-21479BSWZ-4",
+    "component_type": "DSP Processor",
+    "manufacturer": "Analog Devices",
+    "batch_no": "BATCH-2023-AD-7712",
+    "status": "❌ RECALLED — KULLANIMI YASAK",
+    "associated_pcb_id": "PCB-INDUSTRIAL-CTL-5530",
+    "monad_tx": "0xrecall99f456abc789012345678901234567890abcdef1234567890abcdef123",
+    "registered_at": "2023-06-15T11:00:00Z",
+    "history": [
+      "[2023-06-15 11:00] ✅ Monad'a yazıldı — TX: 0xrecall99...f123",
+      "[2023-08-20 09:00] ⚠️ Analog Devices geri çağırma bildirimi yayınlandı — ADI-REC-2023-0041",
+      "[2023-08-20 09:30] 🚨 RECALL SEBEBİ: Belirli termal koşullarda yanlış ADC okuma değerleri üretiyor",
+      "[2023-08-20 10:00] 📢 Etkilenen batch: BATCH-2023-AD-7712 (Tüm seri)",
+      "[2023-08-21 08:00] 🔒 Kullanım durduruldu — PCB-INDUSTRIAL-CTL-5530'dan söküm gerekli",
+      "[2023-09-01 14:00] ❌ IEC 61508 güvenlik ihlali tespit edildi — Derhal imha edilmeli"
+    ]
+  },
+  {
+    "uid": "0xSECONDHAND_REMARKED_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    "part_number": "EP4CE115F29C7N",
+    "component_type": "FPGA",
+    "manufacturer": "Altera / Intel (Kaynak Şüpheli)",
+    "batch_no": "BATCH-UNKNOWN",
+    "status": "⚠️ İKİNCİ EL / YENİDEN İŞARETLENMİŞ",
+    "associated_pcb_id": "PCB-DEFENSE-EW-7710",
+    "monad_tx": null,
+    "registered_at": null,
+    "history": [
+      "[2024-10-05 14:22] 🔍 Görsel inceleme: Chip markası mekanik olarak silinmiş ve yeniden lazer işaretlenmiş",
+      "[2024-10-05 14:30] 🔬 X-Ray analizi: Die boyutu ve wire-bond dağılımı orijinal EP4CE115 ile uyumsuz",
+      "[2024-10-05 15:00] 📡 Blockchain sorgusu: Hiçbir kayıt bulunamadı — Asla kayıt edilmemiş",
+      "[2024-10-06 09:00] ⚠️ Lot tarihi: 2017'den itibaren kullanılmış ve paketlenmiş — aşırı eski",
+      "[2024-10-06 10:30] 🚨 DEF.STAN 05-135 standardına göre UYGUNSUZ — Savunma sanayi kullanımı yasak",
+      "[2024-10-07 08:00] 🔒 Parça karantinaya alındı — Tedarikçiye iade prosesi başlatıldı"
+    ]
+  },
+  {
+    "uid": "0x5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7",
+    "part_number": "LPC55S69JBD100K",
+    "component_type": "ARM Cortex-M33 MCU",
+    "manufacturer": "NXP Semiconductors",
+    "batch_no": "BATCH-2024-NXP-3301",
+    "status": "In Stock",
+    "associated_pcb_id": "PCB-IOTEDGE-8821",
+    "monad_tx": "0x101nxp456abc789012345678901234567890abcdef1234567890abcdef123456",
+    "registered_at": "2024-09-20T10:40:00Z",
+    "history": [
+      "[2024-07-15 08:00] 🏭 Üretim — NXP Hamburg Fabrikası, Almanya",
+      "[2024-07-20 09:00] 📦 Batch BATCH-2024-NXP-3301 paketlendi",
+      "[2024-08-01 06:00] ✈️ Nakliye — Hamburg → Eindhoven deposu",
+      "[2024-09-20 10:40] ✅ Monad Testnet'e hash yazıldı — TX: 0x101nxp...3456"
+    ]
+  },
+  {
+    "uid": "0x8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0",
+    "part_number": "XCKU5P-2FFVB676E",
+    "component_type": "UltraScale+ FPGA",
+    "manufacturer": "Xilinx (AMD)",
+    "batch_no": "BATCH-2024-XI-0781",
+    "status": "Mounted",
+    "associated_pcb_id": "PCB-5G-BASEBAND-1102",
+    "monad_tx": "0x202xi456abc789012345678901234567890abcdef1234567890abcdef1234567",
+    "registered_at": "2024-08-30T16:20:00Z",
+    "history": [
+      "[2024-06-20 07:00] 🏭 Üretim — TSMC 16nm FinFET, Hsinchu, Taiwan",
+      "[2024-06-25 12:00] 📦 Batch kilitlendi",
+      "[2024-07-10 09:00] ✈️ Taiwan → Japonya ihracat onayı alındı",
+      "[2024-07-15 14:00] 📥 WH-APAC-08, Tokyo deposuna teslim",
+      "[2024-08-30 16:20] ✅ Monad Testnet'e hash yazıldı — TX: 0x202xi...4567",
+      "[2024-09-10 09:30] 🔧 PCB-5G-BASEBAND-1102 üzerine monte edildi — Ericsson RRU"
+    ]
+  },
+  {
+    "uid": "0xa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+    "part_number": "AD9361BBCZ",
+    "component_type": "RF Transceiver",
+    "manufacturer": "Analog Devices",
+    "batch_no": "BATCH-2024-AD-0553",
+    "status": "In Stock",
+    "associated_pcb_id": "PCB-SDR-MILITARY-3370",
+    "monad_tx": "0x303ad456abc789012345678901234567890abcdef1234567890abcdef1234567",
+    "registered_at": "2024-10-05T12:00:00Z",
+    "history": [
+      "[2024-08-05 08:00] 🏭 Üretim — ADI Wilmington, Massachusetts, ABD",
+      "[2024-08-15 10:00] 📦 Batch BATCH-2024-AD-0553 ITAR uyumlu paketlendi",
+      "[2024-08-20 09:00] ✈️ ABD Ticaret Bakanlığı ihracat lisansı alındı",
+      "[2024-09-01 11:00] 📥 WH-ITAR-SECURE-01 güvenli depoya teslim",
+      "[2024-10-05 12:00] ✅ Monad Testnet'e hash yazıldı — TX: 0x303ad...4567"
+    ]
+  },
+  {
+    "uid": "0xb4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+    "part_number": "TDA4VM",
+    "component_type": "Automotive SoC",
+    "manufacturer": "Texas Instruments",
+    "batch_no": "BATCH-2024-TI-AUT-9901",
+    "status": "In Transit",
+    "associated_pcb_id": "PCB-ADAS-ECU-6680",
+    "monad_tx": "0x404ti456abc789012345678901234567890abcdef1234567890abcdef1234567",
+    "registered_at": "2024-11-28T08:00:00Z",
+    "history": [
+      "[2024-09-15 07:00] 🏭 Üretim — TI Dallas, AEC-Q100 Grade 1 sertifikalı",
+      "[2024-09-20 09:00] 📦 Automotive kalite paketi tamamlandı",
+      "[2024-10-10 06:00] ✈️ Dallas → Stuttgart (BMW Tedarik Merkezi)",
+      "[2024-11-28 08:00] ✅ Monad Testnet'e hash yazıldı — TX: 0x404ti...4567",
+      "[2024-12-05 10:00] 🚚 Stuttgart → Münih montaj hattı, ETA beklemede"
+    ]
+  },
+  {
+    "uid": "0xc7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9",
+    "part_number": "MAX78000FTFT+",
+    "component_type": "AI Microcontroller",
+    "manufacturer": "Maxim Integrated (ADI)",
+    "batch_no": "BATCH-2024-MAX-0112",
+    "status": "In Stock",
+    "associated_pcb_id": "PCB-EDGE-AI-4450",
+    "monad_tx": "0x505max456abc789012345678901234567890abcdef1234567890abcdef123456",
+    "registered_at": "2024-10-18T15:30:00Z",
+    "history": [
+      "[2024-08-25 08:00] 🏭 Üretim — TSMC 55nm BCD, Taichung, Taiwan",
+      "[2024-09-01 10:00] 📦 Batch BATCH-2024-MAX-0112 paketlendi",
+      "[2024-09-10 14:00] ✈️ Taiwan → San Jose dağıtım merkezi",
+      "[2024-10-18 15:30] ✅ Monad Testnet'e hash yazıldı — TX: 0x505max...3456"
+    ]
+  },
+  {
+    "uid": "0xd0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2",
+    "part_number": "GD32F450ZKT6",
+    "component_type": "Microcontroller",
+    "manufacturer": "GigaDevice Semiconductor",
+    "batch_no": "BATCH-2024-GD-5521",
+    "status": "Scrapped",
+    "associated_pcb_id": "PCB-CONSUMER-IOT-0021",
+    "monad_tx": "0x606gd456abc789012345678901234567890abcdef1234567890abcdef1234567",
+    "registered_at": "2024-07-12T09:00:00Z",
+    "history": [
+      "[2024-07-12 09:00] ✅ Monad Testnet'e hash yazıldı — TX: 0x606gd...4567",
+      "[2024-09-15 11:00] ⚠️ ESD hasarı tespit edildi — Üretim hattı elektrostatik olay kayıtlandı",
+      "[2024-09-15 11:30] 🔍 Fonksiyon testi başarısız — %23 batch etkilendi",
+      "[2024-09-16 09:00] 🗑️ Hurda kararı alındı — IPC-A-610 red kriterlerini karşılamıyor",
+      "[2024-09-17 10:00] ♻️ WEEE direktifi kapsamında çevre dostu imha başlatıldı"
+    ]
+  },
+  {
+    "uid": "0xe3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5",
+    "part_number": "ATSAME70Q21B-AN",
+    "component_type": "ARM Cortex-M7 MCU",
+    "manufacturer": "Microchip Technology",
+    "batch_no": "BATCH-2024-MCH-7734",
+    "status": "Mounted",
+    "associated_pcb_id": "PCB-AEROSPACE-NAV-9910",
+    "monad_tx": "0x707mch456abc789012345678901234567890abcdef1234567890abcdef123456",
+    "registered_at": "2024-09-05T11:15:00Z",
+    "history": [
+      "[2024-07-01 07:00] 🏭 Üretim — Microchip Chandler, Arizona, ABD",
+      "[2024-07-10 09:00] 📦 DO-254 havacılık standardıyla paketlendi",
+      "[2024-07-20 08:00] ✈️ Arizona → Toulouse Airbus Tedarik Merkezi",
+      "[2024-07-25 14:00] 🔍 FAI (First Article Inspection) geçildi — Airbus onaylı",
+      "[2024-09-05 11:15] ✅ Monad Testnet'e hash yazıldı — TX: 0x707mch...3456",
+      "[2024-10-01 09:00] 🔧 PCB-AEROSPACE-NAV-9910 üzerine monte edildi — A320 ILS modülü"
+    ]
+  },
+  {
+    "uid": "0xf6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8",
+    "part_number": "BCM2711",
+    "component_type": "ARM Cortex-A72 SoC",
+    "manufacturer": "Broadcom",
+    "batch_no": "BATCH-2024-BCM-2240",
+    "status": "In Stock",
+    "associated_pcb_id": "PCB-EDGE-COMPUTE-3301",
+    "monad_tx": "0x808bcm456abc789012345678901234567890abcdef1234567890abcdef123456",
+    "registered_at": "2024-11-02T13:45:00Z",
+    "history": [
+      "[2024-09-10 07:00] 🏭 Üretim — TSMC 28nm, Hsinchu, Taiwan",
+      "[2024-09-20 09:00] 📦 Batch BATCH-2024-BCM-2240 paketlendi",
+      "[2024-10-05 06:00] ✈️ Taiwan → San Jose dağıtım merkezi",
+      "[2024-11-02 13:45] ✅ Monad Testnet'e hash yazıldı — TX: 0x808bcm...3456"
+    ]
+  }
+]
