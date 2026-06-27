@@ -27,10 +27,23 @@ import {
   ChevronUp,
   Layers,
   BarChart3,
+  ArrowRightLeft,
+  Wrench,
+  Bell,
+  Truck,
 } from "lucide-react";
 import dataset from "../dataset.json";
 import QRScanner from "./QRScanner";
-import { connectWallet, shortAddress, MONAD_TESTNET } from "../utils/web3";
+import {
+  connectWallet,
+  shortAddress,
+  MONAD_TESTNET,
+  verifyComponentOnChain,
+  registerComponentOnChain,
+  transferOwnershipOnChain,
+  mountToPcbOnChain,
+  recallComponentOnChain,
+} from "../utils/web3";
 
 // ─── Status Badge Configuration ──────────────────────────────────────────────
 const getStatusConfig = (status) => {
@@ -115,16 +128,13 @@ const ResultCard = ({ component, executionTime }) => {
     <div
       className="rounded-2xl overflow-hidden transition-all duration-300"
       style={{
-        background: critical
-          ? "rgba(40, 0, 10, 0.85)"
-          : "rgba(20, 0, 50, 0.85)",
+        background: critical ? "rgba(40, 0, 10, 0.85)" : "rgba(20, 0, 50, 0.85)",
         border: `1px solid ${critical ? "rgba(239,68,68,0.5)" : "rgba(139, 92, 246, 0.3)"}`,
         boxShadow: critical
           ? "0 0 30px rgba(239,68,68,0.15), inset 0 1px 0 rgba(255,255,255,0.03)"
           : "0 0 20px rgba(139,92,246,0.1), inset 0 1px 0 rgba(255,255,255,0.03)",
       }}
     >
-      {/* ── Critical Banner ── */}
       {critical && (
         <div
           className="flex items-center gap-2 px-4 py-2"
@@ -140,7 +150,6 @@ const ResultCard = ({ component, executionTime }) => {
         </div>
       )}
 
-      {/* ── Card Header ── */}
       <div className="p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3">
@@ -148,10 +157,7 @@ const ResultCard = ({ component, executionTime }) => {
               className="p-2.5 rounded-xl flex-shrink-0"
               style={{ background: critical ? "rgba(239,68,68,0.15)" : "rgba(139,92,246,0.15)" }}
             >
-              <CircuitBoard
-                size={20}
-                style={{ color: critical ? "#ef4444" : "#a78bfa" }}
-              />
+              <CircuitBoard size={20} style={{ color: critical ? "#ef4444" : "#a78bfa" }} />
             </div>
             <div>
               <h3 className="text-white font-bold text-base leading-tight">
@@ -162,7 +168,6 @@ const ResultCard = ({ component, executionTime }) => {
               </p>
             </div>
           </div>
-          {/* Status Badge */}
           <div
             className="px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1 max-w-xs text-right"
             style={{
@@ -172,13 +177,10 @@ const ResultCard = ({ component, executionTime }) => {
             }}
           >
             <span>{status.icon}</span>
-            <span className="truncate" style={{ maxWidth: "180px" }}>
-              {status.label}
-            </span>
+            <span className="truncate" style={{ maxWidth: "180px" }}>{status.label}</span>
           </div>
         </div>
 
-        {/* ── Meta Grid ── */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {[
             { icon: Factory, label: "Üretici", value: component.manufacturer },
@@ -199,28 +201,20 @@ const ResultCard = ({ component, executionTime }) => {
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Icon size={11} style={{ color: "#7c3aed" }} />
-                <span className="text-xs" style={{ color: "#6d28d9" }}>
-                  {label}
-                </span>
+                <span className="text-xs" style={{ color: "#6d28d9" }}>{label}</span>
               </div>
               <p className="text-xs font-medium text-gray-200 truncate">{value || "—"}</p>
             </div>
           ))}
         </div>
 
-        {/* ── UID Hash ── */}
         <div
           className="p-3 rounded-xl mb-4"
-          style={{
-            background: "rgba(0,0,0,0.3)",
-            border: "1px solid rgba(139,92,246,0.2)",
-          }}
+          style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(139,92,246,0.2)" }}
         >
           <div className="flex items-center gap-1.5 mb-1.5">
             <Hash size={11} style={{ color: "#7c3aed" }} />
-            <span className="text-xs" style={{ color: "#7c3aed" }}>
-              Donanımsal UID Hash (SHA-256)
-            </span>
+            <span className="text-xs" style={{ color: "#7c3aed" }}>Donanımsal UID Hash (SHA-256)</span>
           </div>
           <p
             className="text-xs font-mono break-all leading-relaxed"
@@ -230,50 +224,33 @@ const ResultCard = ({ component, executionTime }) => {
           </p>
         </div>
 
-        {/* ── TX Hash ── */}
         {component.monad_tx ? (
           <div
             className="p-3 rounded-xl mb-4"
-            style={{
-              background: "rgba(34, 197, 94, 0.05)",
-              border: "1px solid rgba(34,197,94,0.2)",
-            }}
+            style={{ background: "rgba(34, 197, 94, 0.05)", border: "1px solid rgba(34,197,94,0.2)" }}
           >
             <div className="flex items-center gap-1.5 mb-1.5">
               <CheckCircle size={11} className="text-green-400" />
-              <span className="text-xs text-green-400">
-                Monad Blockchain TX
-              </span>
+              <span className="text-xs text-green-400">Monad Blockchain TX</span>
             </div>
-            <p className="text-xs font-mono text-green-300 break-all">
-              {component.monad_tx}
-            </p>
+            <p className="text-xs font-mono text-green-300 break-all">{component.monad_tx}</p>
           </div>
         ) : (
           <div
             className="p-3 rounded-xl mb-4"
-            style={{
-              background: "rgba(239,68,68,0.05)",
-              border: "1px solid rgba(239,68,68,0.2)",
-            }}
+            style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}
           >
             <div className="flex items-center gap-1.5">
               <XCircle size={11} className="text-red-400" />
-              <span className="text-xs text-red-400">
-                Blockchain kaydı bulunamadı — Monad TX yok
-              </span>
+              <span className="text-xs text-red-400">Blockchain kaydı bulunamadı — Monad TX yok</span>
             </div>
           </div>
         )}
 
-        {/* ── Execution Time Badge ── */}
         {executionTime && (
           <div
             className="flex items-center gap-2 px-3 py-2 rounded-xl mb-4"
-            style={{
-              background: "rgba(167,139,250,0.08)",
-              border: "1px solid rgba(167,139,250,0.2)",
-            }}
+            style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.2)" }}
           >
             <Zap size={12} style={{ color: "#a78bfa" }} />
             <span className="text-xs font-mono" style={{ color: "#a78bfa" }}>
@@ -287,16 +264,12 @@ const ResultCard = ({ component, executionTime }) => {
           </div>
         )}
 
-        {/* ── History Log ── */}
         {component.history && component.history.length > 0 && (
           <div>
             <button
               onClick={() => setHistoryOpen((v) => !v)}
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.07)",
-              }}
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
             >
               <div className="flex items-center gap-2">
                 <Eye size={13} style={{ color: "#7c3aed" }} />
@@ -320,10 +293,7 @@ const ResultCard = ({ component, executionTime }) => {
             {historyOpen && (
               <div
                 className="mt-2 p-3 rounded-xl space-y-2"
-                style={{
-                  background: "rgba(0,0,0,0.25)",
-                  border: "1px solid rgba(255,255,255,0.05)",
-                }}
+                style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.05)" }}
               >
                 {component.history.map((log, i) => (
                   <div
@@ -360,6 +330,7 @@ const EngineerTab = () => {
   const [executionTime, setExecutionTime] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [resultSource, setResultSource] = useState(null);
 
   const handleSearch = useCallback(
     (overrideQuery) => {
@@ -369,27 +340,60 @@ const EngineerTab = () => {
       setIsSearching(true);
       setSearched(false);
       setResults([]);
+      setResultSource(null);
 
       const t0 = performance.now();
 
-      // Simulate Monad parallel execution with brief async delay
-      setTimeout(() => {
-        const found = dataset.filter(
-          (item) =>
-            item.uid?.toLowerCase().includes(q) ||
-            item.part_number?.toLowerCase().includes(q) ||
-            item.associated_pcb_id?.toLowerCase().includes(q) ||
-            item.batch_no?.toLowerCase().includes(q) ||
-            item.manufacturer?.toLowerCase().includes(q) ||
-            item.component_type?.toLowerCase().includes(q)
-        );
+      verifyComponentOnChain(q)
+        .then((chainComponent) => {
+          if (chainComponent) {
+            const t1 = performance.now();
+            setExecutionTime((t1 - t0).toFixed(1));
+            setResults([chainComponent]);
+            setResultSource("blockchain");
+            setSearched(true);
+            setIsSearching(false);
+            return;
+          }
 
-        const t1 = performance.now();
-        setExecutionTime((t1 - t0).toFixed(1));
-        setResults(found);
-        setSearched(true);
-        setIsSearching(false);
-      }, 180 + Math.random() * 80);
+          setTimeout(() => {
+            const found = dataset.filter(
+              (item) =>
+                item.uid?.toLowerCase().includes(q) ||
+                item.part_number?.toLowerCase().includes(q) ||
+                item.associated_pcb_id?.toLowerCase().includes(q) ||
+                item.batch_no?.toLowerCase().includes(q) ||
+                item.manufacturer?.toLowerCase().includes(q) ||
+                item.component_type?.toLowerCase().includes(q)
+            );
+
+            const t1 = performance.now();
+            setExecutionTime((t1 - t0).toFixed(1));
+            setResults(found);
+            setResultSource("dataset");
+            setSearched(true);
+            setIsSearching(false);
+          }, 180 + Math.random() * 80);
+        })
+        .catch(() => {
+          setTimeout(() => {
+            const found = dataset.filter(
+              (item) =>
+                item.uid?.toLowerCase().includes(q) ||
+                item.part_number?.toLowerCase().includes(q) ||
+                item.associated_pcb_id?.toLowerCase().includes(q) ||
+                item.batch_no?.toLowerCase().includes(q) ||
+                item.manufacturer?.toLowerCase().includes(q) ||
+                item.component_type?.toLowerCase().includes(q)
+            );
+            const t1 = performance.now();
+            setExecutionTime((t1 - t0).toFixed(1));
+            setResults(found);
+            setResultSource("dataset");
+            setSearched(true);
+            setIsSearching(false);
+          }, 180 + Math.random() * 80);
+        });
     },
     [query]
   );
@@ -408,23 +412,18 @@ const EngineerTab = () => {
     setResults([]);
     setSearched(false);
     setExecutionTime(null);
+    setResultSource(null);
   };
 
   return (
     <div>
-      {/* ── Search Controls ── */}
       <div
         className="p-5 rounded-2xl mb-6"
-        style={{
-          background: "rgba(32, 0, 82, 0.5)",
-          border: "1px solid rgba(139, 92, 246, 0.25)",
-        }}
+        style={{ background: "rgba(32, 0, 82, 0.5)", border: "1px solid rgba(139, 92, 246, 0.25)" }}
       >
         <div className="flex items-center gap-2 mb-4">
           <Shield size={16} style={{ color: "#a78bfa" }} />
-          <h2 className="text-sm font-semibold text-white">
-            Komponent Doğrulama
-          </h2>
+          <h2 className="text-sm font-semibold text-white">Komponent Doğrulama</h2>
           <span
             className="ml-auto px-2 py-0.5 rounded-full text-xs"
             style={{ background: "rgba(124,58,237,0.2)", color: "#a78bfa" }}
@@ -433,7 +432,6 @@ const EngineerTab = () => {
           </span>
         </div>
 
-        {/* Search Row */}
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search
@@ -454,18 +452,11 @@ const EngineerTab = () => {
                 color: "white",
                 fontFamily: "monospace",
               }}
-              onFocus={(e) =>
-                (e.target.style.borderColor = "rgba(167,139,250,0.6)")
-              }
-              onBlur={(e) =>
-                (e.target.style.borderColor = "rgba(139,92,246,0.3)")
-              }
+              onFocus={(e) => (e.target.style.borderColor = "rgba(167,139,250,0.6)")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(139,92,246,0.3)")}
             />
             {query && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
+              <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2">
                 <X size={13} className="text-gray-500 hover:text-white transition-colors" />
               </button>
             )}
@@ -480,20 +471,14 @@ const EngineerTab = () => {
               color: "white",
             }}
           >
-            {isSearching ? (
-              <RefreshCw size={15} className="animate-spin" />
-            ) : (
-              <Search size={15} />
-            )}
+            {isSearching ? <RefreshCw size={15} className="animate-spin" /> : <Search size={15} />}
             Sorgula
           </button>
           <button
             onClick={() => setShowScanner((v) => !v)}
             className="px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2"
             style={{
-              background: showScanner
-                ? "rgba(167,139,250,0.2)"
-                : "rgba(255,255,255,0.05)",
+              background: showScanner ? "rgba(167,139,250,0.2)" : "rgba(255,255,255,0.05)",
               border: "1px solid rgba(139,92,246,0.3)",
               color: "#a78bfa",
             }}
@@ -503,57 +488,47 @@ const EngineerTab = () => {
           </button>
         </div>
 
-        {/* Quick Filters */}
         <div className="flex flex-wrap gap-2 mt-3">
-          {["STM32", "FPGA", "PCB-RADAR", "BATCH-2024", "RECALLED", "SAHTE"].map(
-            (tag) => (
-              <button
-                key={tag}
-                onClick={() => {
-                  setQuery(tag.toLowerCase());
-                  handleSearch(tag.toLowerCase());
-                }}
-                className="px-2.5 py-1 rounded-lg text-xs transition-all hover:bg-purple-800/40"
-                style={{
-                  background: "rgba(124,58,237,0.12)",
-                  border: "1px solid rgba(124,58,237,0.25)",
-                  color: "#c4b5fd",
-                }}
-              >
-                {tag}
-              </button>
-            )
-          )}
+          {["STM32", "FPGA", "PCB-RADAR", "BATCH-2024", "RECALLED", "SAHTE"].map((tag) => (
+            <button
+              key={tag}
+              onClick={() => {
+                setQuery(tag.toLowerCase());
+                handleSearch(tag.toLowerCase());
+              }}
+              className="px-2.5 py-1 rounded-lg text-xs transition-all hover:bg-purple-800/40"
+              style={{
+                background: "rgba(124,58,237,0.12)",
+                border: "1px solid rgba(124,58,237,0.25)",
+                color: "#c4b5fd",
+              }}
+            >
+              {tag}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ── QR Scanner Panel ── */}
       {showScanner && (
         <div className="mb-6">
-          <QRScanner
-            onScanResult={handleScanResult}
-            onClose={() => setShowScanner(false)}
-          />
+          <QRScanner onScanResult={handleScanResult} onClose={() => setShowScanner(false)} />
         </div>
       )}
 
-      {/* ── Execution Metrics ── */}
       {executionTime && searched && (
         <div
           className="flex items-center justify-between px-5 py-3 rounded-xl mb-5"
-          style={{
-            background: "rgba(124, 58, 237, 0.08)",
-            border: "1px solid rgba(124,58,237,0.2)",
-          }}
+          style={{ background: "rgba(124, 58, 237, 0.08)", border: "1px solid rgba(124,58,237,0.2)" }}
         >
           <div className="flex items-center gap-3">
             <Zap size={16} style={{ color: "#a78bfa" }} />
             <div>
               <p className="text-xs font-mono" style={{ color: "#a78bfa" }}>
                 ⚡ Monad Parallel Execution:{" "}
-                <span className="text-white font-bold text-sm">
-                  {executionTime}ms
-                </span>
+                <span className="text-white font-bold text-sm">{executionTime}ms</span>
+                {resultSource === "blockchain" && (
+                  <span className="ml-2 text-green-400">🔗 Canlı Zincir Verisi</span>
+                )}
               </p>
               <p className="text-xs" style={{ color: "#6d28d9" }}>
                 {results.length} kayıt paralel işlemde tarandı — 10k+ TPS kapasitesi
@@ -571,25 +546,19 @@ const EngineerTab = () => {
             ) : (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/20 border border-green-500/30">
                 <CheckCircle size={12} className="text-green-400" />
-                <span className="text-xs text-green-400 font-bold">
-                  {results.length} DOĞRULANDI
-                </span>
+                <span className="text-xs text-green-400 font-bold">{results.length} DOĞRULANDI</span>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* ── Results ── */}
       {searched && (
         <div>
           {results.length === 0 ? (
             <div
               className="text-center py-16 rounded-2xl"
-              style={{
-                background: "rgba(32,0,82,0.3)",
-                border: "1px dashed rgba(139,92,246,0.25)",
-              }}
+              style={{ background: "rgba(32,0,82,0.3)", border: "1px dashed rgba(139,92,246,0.25)" }}
             >
               <Search size={32} className="mx-auto mb-3 opacity-30 text-purple-400" />
               <p className="text-white font-medium mb-1">Kayıt Bulunamadı</p>
@@ -600,41 +569,39 @@ const EngineerTab = () => {
           ) : (
             <div className="space-y-4">
               {results.map((component, i) => (
-                <ResultCard
-                  key={component.uid + i}
-                  component={component}
-                  executionTime={executionTime}
-                />
+                <ResultCard key={component.uid + i} component={component} executionTime={executionTime} />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* ── Empty State ── */}
       {!searched && !showScanner && (
         <div
           className="text-center py-20 rounded-2xl"
-          style={{
-            background: "rgba(32,0,82,0.2)",
-            border: "1px dashed rgba(139,92,246,0.2)",
-          }}
+          style={{ background: "rgba(32,0,82,0.2)", border: "1px dashed rgba(139,92,246,0.2)" }}
         >
-          <div
-            className="inline-flex p-4 rounded-2xl mb-4"
-            style={{ background: "rgba(124,58,237,0.1)" }}
-          >
+          <div className="inline-flex p-4 rounded-2xl mb-4" style={{ background: "rgba(124,58,237,0.1)" }}>
             <CircuitBoard size={36} style={{ color: "rgba(167,139,250,0.5)" }} />
           </div>
           <p className="text-white font-medium mb-2">Doğrulama Hazır</p>
-          <p className="text-xs mb-6" style={{ color: "#7c3aed", maxWidth: "300px", margin: "0 auto 24px" }}>
-            Yarı iletken komponent UID hash'ini, parça numarasını veya PCB kimliğini
-            yazarak Monad blockchain doğrulaması başlatın.
+          <p
+            className="text-xs mb-6"
+            style={{ color: "#7c3aed", maxWidth: "300px", margin: "0 auto 24px" }}
+          >
+            Yarı iletken komponent UID hash'ini, parça numarasını veya PCB kimliğini yazarak Monad
+            blockchain doğrulaması başlatın.
           </p>
           <div className="flex items-center justify-center gap-4 text-xs" style={{ color: "#6d28d9" }}>
-            <span className="flex items-center gap-1"><CheckCircle size={11} className="text-green-400" /> Orijinal tespit</span>
-            <span className="flex items-center gap-1"><AlertTriangle size={11} className="text-red-400" /> Sahte alarm</span>
-            <span className="flex items-center gap-1"><XCircle size={11} className="text-orange-400" /> Recall uyarısı</span>
+            <span className="flex items-center gap-1">
+              <CheckCircle size={11} className="text-green-400" /> Orijinal tespit
+            </span>
+            <span className="flex items-center gap-1">
+              <AlertTriangle size={11} className="text-red-400" /> Sahte alarm
+            </span>
+            <span className="flex items-center gap-1">
+              <XCircle size={11} className="text-orange-400" /> Recall uyarısı
+            </span>
           </div>
         </div>
       )}
@@ -669,9 +636,7 @@ const ManufacturerTab = ({ walletAddress }) => {
     "AB DPP Ready",
   ];
 
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const toggleCompliance = (item) => {
     setForm((prev) => ({
@@ -695,18 +660,33 @@ const ManufacturerTab = ({ walletAddress }) => {
       return;
     }
     setSubmitting(true);
+    try {
+      const productionFacility = [form.manufacturer, form.fab_location].filter(Boolean).join(" — ");
+      const qualityTest = [form.component_type, form.process_node, form.compliance.join(", ")]
+        .filter(Boolean)
+        .join(" | ");
 
-    // Simulate blockchain TX
-    await new Promise((r) => setTimeout(r, 2200));
+      const { txHash: realTxHash } = await registerComponentOnChain({
+        uid: form.uid,
+        partNumber: form.part_number,
+        batchNo: form.batch_no,
+        productionFacility,
+        qualityTest,
+      });
 
-    const mockTx =
-      "0x" +
-      Array.from({ length: 64 }, () =>
-        Math.floor(Math.random() * 16).toString(16)
-      ).join("");
-    setTxHash(mockTx);
-    setSubmitting(false);
-    setSubmitted(true);
+      setTxHash(realTxHash);
+      setSubmitting(false);
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitting(false);
+      const msg =
+        err?.reason ||
+        err?.shortMessage ||
+        err?.info?.error?.message ||
+        err?.message ||
+        "İşlem başarısız oldu.";
+      alert(`Monad kayıt hatası: ${msg}`);
+    }
   };
 
   const resetForm = () => {
@@ -747,25 +727,16 @@ const ManufacturerTab = ({ walletAddress }) => {
           boxShadow: "0 0 40px rgba(34,197,94,0.1)",
         }}
       >
-        <div
-          className="inline-flex p-5 rounded-2xl mb-5"
-          style={{ background: "rgba(34,197,94,0.12)" }}
-        >
+        <div className="inline-flex p-5 rounded-2xl mb-5" style={{ background: "rgba(34,197,94,0.12)" }}>
           <CheckCircle size={40} className="text-green-400" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">
-          Monad'a Başarıyla Yazıldı
-        </h3>
+        <h3 className="text-xl font-bold text-white mb-2">Monad'a Başarıyla Yazıldı</h3>
         <p className="text-sm mb-6" style={{ color: "#7c3aed" }}>
-          {form.part_number || "Komponent"} — Batch {form.batch_no || "—"}{" "}
-          blockchain'e kaydedildi.
+          {form.part_number || "Komponent"} — Batch {form.batch_no || "—"} blockchain'e kaydedildi.
         </p>
         <div
           className="p-4 rounded-xl mb-6 text-left"
-          style={{
-            background: "rgba(34,197,94,0.05)",
-            border: "1px solid rgba(34,197,94,0.2)",
-          }}
+          style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}
         >
           <p className="text-xs text-green-400 mb-1.5 flex items-center gap-1.5">
             <CheckCircle size={11} /> Transaction Hash
@@ -792,10 +763,7 @@ const ManufacturerTab = ({ walletAddress }) => {
         <button
           onClick={resetForm}
           className="px-6 py-3 rounded-xl text-sm font-semibold transition-all"
-          style={{
-            background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
-            color: "white",
-          }}
+          style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white" }}
         >
           Yeni Komponent Kaydet
         </button>
@@ -806,30 +774,19 @@ const ManufacturerTab = ({ walletAddress }) => {
   return (
     <div
       className="rounded-2xl overflow-hidden"
-      style={{
-        background: "rgba(20, 0, 50, 0.85)",
-        border: "1px solid rgba(139, 92, 246, 0.25)",
-      }}
+      style={{ background: "rgba(20, 0, 50, 0.85)", border: "1px solid rgba(139, 92, 246, 0.25)" }}
     >
-      {/* Form Header */}
       <div
         className="px-6 py-4 border-b flex items-center justify-between"
         style={{ borderColor: "rgba(139,92,246,0.2)" }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="p-2 rounded-lg"
-            style={{ background: "rgba(124,58,237,0.2)" }}
-          >
+          <div className="p-2 rounded-lg" style={{ background: "rgba(124,58,237,0.2)" }}>
             <Factory size={16} style={{ color: "#a78bfa" }} />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">
-              Üretici Komponent Kayıt Formu
-            </p>
-            <p className="text-xs" style={{ color: "#7c3aed" }}>
-              AB DPP • Monad Testnet • IDPP v2.4
-            </p>
+            <p className="text-sm font-semibold text-white">Üretici Komponent Kayıt Formu</p>
+            <p className="text-xs" style={{ color: "#7c3aed" }}>AB DPP • Monad Testnet • IDPP v2.4</p>
           </div>
         </div>
         {walletAddress ? (
@@ -850,7 +807,6 @@ const ManufacturerTab = ({ walletAddress }) => {
       </div>
 
       <div className="p-6 space-y-5">
-        {/* Row 1 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
@@ -882,12 +838,9 @@ const ManufacturerTab = ({ walletAddress }) => {
           </div>
         </div>
 
-        {/* Row 2 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
-              Üretici *
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>Üretici *</label>
             <input
               style={inputStyle}
               placeholder="örn: STMicroelectronics"
@@ -898,9 +851,7 @@ const ManufacturerTab = ({ walletAddress }) => {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
-              Batch Numarası *
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>Batch Numarası *</label>
             <input
               style={inputStyle}
               placeholder="örn: BATCH-2024-ST-0001"
@@ -912,7 +863,6 @@ const ManufacturerTab = ({ walletAddress }) => {
           </div>
         </div>
 
-        {/* UID Hash */}
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
             Donanımsal UID Hash (SHA-256) *
@@ -941,12 +891,9 @@ const ManufacturerTab = ({ walletAddress }) => {
           </div>
         </div>
 
-        {/* Row 3 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
-              İlişkili PCB ID
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>İlişkili PCB ID</label>
             <input
               style={inputStyle}
               placeholder="örn: PCB-MAIN-0042"
@@ -957,9 +904,7 @@ const ManufacturerTab = ({ walletAddress }) => {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
-              Fabrika Konumu
-            </label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>Fabrika Konumu</label>
             <input
               style={inputStyle}
               placeholder="örn: TSMC Hsinchu, Taiwan"
@@ -971,11 +916,8 @@ const ManufacturerTab = ({ walletAddress }) => {
           </div>
         </div>
 
-        {/* Process Node */}
         <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
-            Üretim Süreci
-          </label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>Üretim Süreci</label>
           <select
             style={{ ...inputStyle, cursor: "pointer" }}
             value={form.process_node}
@@ -988,7 +930,6 @@ const ManufacturerTab = ({ walletAddress }) => {
           </select>
         </div>
 
-        {/* Compliance Checkboxes */}
         <div>
           <label className="block text-xs font-medium mb-2" style={{ color: "#a78bfa" }}>
             Uyumluluk Sertifikaları
@@ -1000,12 +941,8 @@ const ManufacturerTab = ({ walletAddress }) => {
                 onClick={() => toggleCompliance(item)}
                 className="px-3 py-1.5 rounded-lg text-xs transition-all"
                 style={{
-                  background: form.compliance.includes(item)
-                    ? "rgba(124,58,237,0.35)"
-                    : "rgba(255,255,255,0.04)",
-                  border: form.compliance.includes(item)
-                    ? "1px solid rgba(167,139,250,0.6)"
-                    : "1px solid rgba(255,255,255,0.1)",
+                  background: form.compliance.includes(item) ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.04)",
+                  border: form.compliance.includes(item) ? "1px solid rgba(167,139,250,0.6)" : "1px solid rgba(255,255,255,0.1)",
                   color: form.compliance.includes(item) ? "#c4b5fd" : "#6b7280",
                 }}
               >
@@ -1016,16 +953,9 @@ const ManufacturerTab = ({ walletAddress }) => {
           </div>
         </div>
 
-        {/* Submit */}
         <button
           onClick={handleSubmit}
-          disabled={
-            submitting ||
-            !form.part_number ||
-            !form.manufacturer ||
-            !form.batch_no ||
-            !form.uid
-          }
+          disabled={submitting || !form.part_number || !form.manufacturer || !form.batch_no || !form.uid}
           className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           style={{
             background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)",
@@ -1042,6 +972,397 @@ const ManufacturerTab = ({ walletAddress }) => {
             <>
               <Send size={15} />
               Monad Blockchain'e Kaydet
+            </>
+          )}
+        </button>
+
+        {!walletAddress && (
+          <p className="text-center text-xs" style={{ color: "#ef4444" }}>
+            ⚠️ İşlem göndermek için önce Monad cüzdanını bağlayın
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Distributor / Factory Tab ────────────────────────────────────────────────
+const DistributorTab = ({ walletAddress }) => {
+  const [activeAction, setActiveAction] = useState("transfer"); // transfer | mount | recall
+  const [uid, setUid] = useState("");
+  const [toAddress, setToAddress] = useState("");
+  const [pcbId, setPcbId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [txResult, setTxResult] = useState(null); // { txHash, action }
+  const [error, setError] = useState(null);
+
+  const actions = [
+    {
+      id: "transfer",
+      label: "Sahiplik Devri",
+      sublabel: "transferOwnership",
+      icon: ArrowRightLeft,
+      color: "#a78bfa",
+      accent: "rgba(167,139,250,0.15)",
+      border: "rgba(167,139,250,0.35)",
+      desc: "Parçanın zincir üzerindeki sahipliğini bir distribütör veya fabrika cüzdanına devreder.",
+    },
+    {
+      id: "mount",
+      label: "PCB'ye Monte Et",
+      sublabel: "mountToPcb",
+      icon: Wrench,
+      color: "#3b82f6",
+      accent: "rgba(59,130,246,0.15)",
+      border: "rgba(59,130,246,0.35)",
+      desc: "Parçayı belirtilen PCB ID'sine monte edilmiş (Mounted) durumuna getirir.",
+    },
+    {
+      id: "recall",
+      label: "Geri Çağır",
+      sublabel: "recallComponent",
+      icon: Bell,
+      color: "#ef4444",
+      accent: "rgba(239,68,68,0.12)",
+      border: "rgba(239,68,68,0.35)",
+      desc: "Parçayı Recalled durumuna alır — kullanımı derhal yasak hale gelir.",
+    },
+  ];
+
+  const current = actions.find((a) => a.id === activeAction);
+
+  const resetForm = () => {
+    setUid("");
+    setToAddress("");
+    setPcbId("");
+    setTxResult(null);
+    setError(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!walletAddress) {
+      alert("Lütfen önce Monad cüzdanınızı bağlayın.");
+      return;
+    }
+    if (!uid.trim()) {
+      setError("UID / Hash alanı boş bırakılamaz.");
+      return;
+    }
+    if (activeAction === "transfer" && !toAddress.trim()) {
+      setError("Hedef cüzdan adresi girilmelidir.");
+      return;
+    }
+    if (activeAction === "mount" && !pcbId.trim()) {
+      setError("PCB ID girilmelidir.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+    setTxResult(null);
+
+    try {
+      let result;
+      if (activeAction === "transfer") {
+        result = await transferOwnershipOnChain({ uid, toAddress });
+      } else if (activeAction === "mount") {
+        result = await mountToPcbOnChain({ uid, pcbId });
+      } else {
+        result = await recallComponentOnChain({ uid });
+      }
+      setTxResult({ txHash: result.txHash, action: activeAction });
+    } catch (err) {
+      const msg =
+        err?.reason ||
+        err?.shortMessage ||
+        err?.info?.error?.message ||
+        err?.message ||
+        "İşlem başarısız oldu.";
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputStyle = {
+    background: "rgba(0,0,0,0.4)",
+    border: "1px solid rgba(139,92,246,0.3)",
+    color: "white",
+    borderRadius: "12px",
+    padding: "12px 14px",
+    width: "100%",
+    fontSize: "13px",
+    outline: "none",
+    transition: "border-color 0.2s",
+    fontFamily: "monospace",
+  };
+
+  if (txResult) {
+    const actionLabels = { transfer: "Sahiplik Devri", mount: "PCB Montajı", recall: "Geri Çağırma" };
+    const actionIcons = { transfer: ArrowRightLeft, mount: Wrench, recall: Bell };
+    const ActionIcon = actionIcons[txResult.action];
+    const isRecall = txResult.action === "recall";
+
+    return (
+      <div
+        className="rounded-2xl p-8 text-center"
+        style={{
+          background: isRecall ? "rgba(40, 0, 10, 0.85)" : "rgba(20, 0, 50, 0.85)",
+          border: `1px solid ${isRecall ? "rgba(239,68,68,0.4)" : "rgba(34,197,94,0.4)"}`,
+          boxShadow: isRecall ? "0 0 40px rgba(239,68,68,0.1)" : "0 0 40px rgba(34,197,94,0.1)",
+        }}
+      >
+        <div
+          className="inline-flex p-5 rounded-2xl mb-5"
+          style={{ background: isRecall ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.12)" }}
+        >
+          <ActionIcon size={40} style={{ color: isRecall ? "#ef4444" : "#22c55e" }} />
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2">
+          {actionLabels[txResult.action]} Tamamlandı
+        </h3>
+        <p className="text-sm mb-6" style={{ color: "#7c3aed" }}>
+          İşlem Monad Testnet'e başarıyla gönderildi ve onaylandı.
+        </p>
+        <div
+          className="p-4 rounded-xl mb-6 text-left"
+          style={{
+            background: isRecall ? "rgba(239,68,68,0.05)" : "rgba(34,197,94,0.05)",
+            border: `1px solid ${isRecall ? "rgba(239,68,68,0.2)" : "rgba(34,197,94,0.2)"}`,
+          }}
+        >
+          <p
+            className="text-xs mb-1.5 flex items-center gap-1.5"
+            style={{ color: isRecall ? "#ef4444" : "#22c55e" }}
+          >
+            <CheckCircle size={11} /> Transaction Hash
+          </p>
+          <p className="text-xs font-mono break-all" style={{ color: isRecall ? "#fca5a5" : "#86efac" }}>
+            {txResult.txHash}
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label: "Blok Onayı", value: "~0.5s", icon: Zap },
+            { label: "Gas Ücreti", value: "~0.0002 MON", icon: Activity },
+            { label: "Durum", value: "Onaylandı ✅", icon: CheckCircle },
+          ].map(({ label, value, icon: Icon }) => (
+            <div
+              key={label}
+              className="p-3 rounded-xl text-center"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <Icon size={16} className="mx-auto mb-1.5 text-purple-400" />
+              <p className="text-white font-semibold text-sm">{value}</p>
+              <p className="text-xs mt-0.5" style={{ color: "#7c3aed" }}>{label}</p>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={resetForm}
+          className="px-6 py-3 rounded-xl text-sm font-semibold transition-all"
+          style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white" }}
+        >
+          Yeni İşlem Yap
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{ background: "rgba(20, 0, 50, 0.85)", border: "1px solid rgba(139, 92, 246, 0.25)" }}
+    >
+      {/* Header */}
+      <div
+        className="px-6 py-4 border-b flex items-center justify-between"
+        style={{ borderColor: "rgba(139,92,246,0.2)" }}
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg" style={{ background: "rgba(124,58,237,0.2)" }}>
+            <Truck size={16} style={{ color: "#a78bfa" }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Distribütör / Fabrika İşlemleri</p>
+            <p className="text-xs" style={{ color: "#7c3aed" }}>
+              Tedarik Zinciri • Monad Testnet • On-chain TX
+            </p>
+          </div>
+        </div>
+        {walletAddress ? (
+          <div
+            className="px-3 py-1.5 rounded-lg text-xs font-mono"
+            style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", color: "#22c55e" }}
+          >
+            {shortAddress(walletAddress)}
+          </div>
+        ) : (
+          <div
+            className="px-3 py-1.5 rounded-lg text-xs"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444" }}
+          >
+            Cüzdan Bağlı Değil
+          </div>
+        )}
+      </div>
+
+      <div className="p-6 space-y-5">
+        {/* Action Selector */}
+        <div>
+          <label className="block text-xs font-medium mb-2" style={{ color: "#a78bfa" }}>
+            İşlem Türü
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            {actions.map(({ id, label, sublabel, icon: Icon, color, accent, border }) => (
+              <button
+                key={id}
+                onClick={() => { setActiveAction(id); setError(null); setTxResult(null); }}
+                className="p-3 rounded-xl text-left transition-all duration-200"
+                style={{
+                  background: activeAction === id ? accent : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${activeAction === id ? border : "rgba(255,255,255,0.08)"}`,
+                }}
+              >
+                <Icon
+                  size={18}
+                  className="mb-2"
+                  style={{ color: activeAction === id ? color : "#4b5563" }}
+                />
+                <p
+                  className="text-xs font-semibold leading-tight"
+                  style={{ color: activeAction === id ? color : "#9ca3af" }}
+                >
+                  {label}
+                </p>
+                <p className="text-xs mt-0.5 font-mono" style={{ color: "#4b5563", fontSize: "10px" }}>
+                  {sublabel}
+                </p>
+              </button>
+            ))}
+          </div>
+          {/* Action description */}
+          <div
+            className="mt-3 px-3 py-2 rounded-xl flex items-start gap-2"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <current.icon size={13} className="mt-0.5 flex-shrink-0" style={{ color: current.color }} />
+            <p className="text-xs" style={{ color: "#9ca3af" }}>{current.desc}</p>
+          </div>
+        </div>
+
+        {/* UID Input */}
+        <div>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
+            Komponent UID / Hash *
+          </label>
+          <input
+            style={inputStyle}
+            placeholder="0x... veya herhangi bir UID string"
+            value={uid}
+            onChange={(e) => setUid(e.target.value)}
+            onFocus={(e) => (e.target.style.borderColor = "rgba(167,139,250,0.6)")}
+            onBlur={(e) => (e.target.style.borderColor = "rgba(139,92,246,0.3)")}
+          />
+        </div>
+
+        {/* Transfer: hedef adres */}
+        {activeAction === "transfer" && (
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
+              Hedef Cüzdan Adresi *
+            </label>
+            <input
+              style={inputStyle}
+              placeholder="0x... (Distribütör veya Fabrika adresi)"
+              value={toAddress}
+              onChange={(e) => setToAddress(e.target.value)}
+              onFocus={(e) => (e.target.style.borderColor = "rgba(167,139,250,0.6)")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(139,92,246,0.3)")}
+            />
+            <p className="text-xs mt-1.5" style={{ color: "#6b7280" }}>
+              Not: Hedef adresin kontrat üzerinde Distributor veya Factory rolüne sahip olması gerekir.
+            </p>
+          </div>
+        )}
+
+        {/* Mount: PCB ID */}
+        {activeAction === "mount" && (
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#a78bfa" }}>
+              Hedef PCB ID *
+            </label>
+            <input
+              style={{ ...inputStyle, fontFamily: "inherit" }}
+              placeholder="örn: PCB-RADAR-0042"
+              value={pcbId}
+              onChange={(e) => setPcbId(e.target.value)}
+              onFocus={(e) => (e.target.style.borderColor = "rgba(59,130,246,0.6)")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(139,92,246,0.3)")}
+            />
+          </div>
+        )}
+
+        {/* Recall: uyarı banner */}
+        {activeAction === "recall" && (
+          <div
+            className="flex items-start gap-3 p-4 rounded-xl"
+            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}
+          >
+            <AlertTriangle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-red-400 mb-1">Geri Çağırma İşlemi Geri Alınamaz</p>
+              <p className="text-xs" style={{ color: "#fca5a5" }}>
+                Bu işlem çalıştırıldığında komponent Recalled durumuna geçer ve tüm doğrulama
+                sorgularında "❌ RECALLED — KULLANIMI YASAK" olarak görüntülenir.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div
+            className="flex items-start gap-2 p-3 rounded-xl"
+            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}
+          >
+            <XCircle size={14} className="text-red-400 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-red-400">{error}</p>
+          </div>
+        )}
+
+        {/* Submit */}
+        <button
+          onClick={handleSubmit}
+          disabled={submitting || !uid.trim()}
+          className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          style={{
+            background:
+              activeAction === "recall"
+                ? "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"
+                : activeAction === "mount"
+                ? "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)"
+                : "linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)",
+            boxShadow:
+              activeAction === "recall"
+                ? "0 0 30px rgba(220,38,38,0.4)"
+                : activeAction === "mount"
+                ? "0 0 30px rgba(29,78,216,0.4)"
+                : "0 0 30px rgba(124, 58, 237, 0.45)",
+            color: "white",
+          }}
+        >
+          {submitting ? (
+            <>
+              <RefreshCw size={15} className="animate-spin" />
+              Monad'a gönderiliyor...
+            </>
+          ) : (
+            <>
+              <current.icon size={15} />
+              {activeAction === "transfer" && "Sahipliği Devret"}
+              {activeAction === "mount" && "PCB'ye Monte Et"}
+              {activeAction === "recall" && "Geri Çağırma İşlemini Başlat"}
             </>
           )}
         </button>
@@ -1091,7 +1412,28 @@ const Dashboard = () => {
       sublabel: "Yeni çip kaydet",
       icon: Factory,
     },
+    {
+      id: "distributor",
+      label: "Distribütör / Fabrika",
+      sublabel: "Devir, montaj, recall",
+      icon: Truck,
+    },
   ];
+
+  const pageHeaders = {
+    engineer: {
+      title: "Mühendis Doğrulama UI",
+      sub: "Monad blockchain üzerinde komponent doğrulama ve sahte ürün tespiti",
+    },
+    manufacturer: {
+      title: "Üretici Giriş Paneli",
+      sub: "Yeni yarı iletken komponentleri IDPP'ye kayıt et — AB DPP uyumlu",
+    },
+    distributor: {
+      title: "Distribütör / Fabrika İşlemleri",
+      sub: "Sahiplik devri, PCB montajı ve geri çağırma işlemlerini zincire yaz",
+    },
+  };
 
   return (
     <div
@@ -1113,7 +1455,6 @@ const Dashboard = () => {
           zIndex: 40,
         }}
       >
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div
             className="p-2 rounded-xl"
@@ -1125,59 +1466,40 @@ const Dashboard = () => {
             <CircuitBoard size={20} className="text-white" />
           </div>
           <div>
-            <h1 className="text-white font-bold text-base leading-tight tracking-tight">
-              IDPP
-            </h1>
+            <h1 className="text-white font-bold text-base leading-tight tracking-tight">IDPP</h1>
             <p className="text-xs" style={{ color: "#7c3aed" }}>
               Industrial Digital Component Passport
             </p>
           </div>
-          {/* Monad badge */}
           <div
             className="ml-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-            style={{
-              background: "rgba(124,58,237,0.15)",
-              border: "1px solid rgba(124,58,237,0.35)",
-            }}
+            style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.35)" }}
           >
             <Globe size={10} style={{ color: "#a78bfa" }} />
-            <span className="text-xs font-mono" style={{ color: "#a78bfa" }}>
-              Monad Testnet
-            </span>
+            <span className="text-xs font-mono" style={{ color: "#a78bfa" }}>Monad Testnet</span>
           </div>
         </div>
 
-        {/* Right: Stats + Alarm + Wallet */}
         <div className="flex items-center gap-3">
           <LiveStats />
 
           {alarmCount > 0 && (
             <div
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full animate-pulse"
-              style={{
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.4)",
-              }}
+              style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)" }}
             >
               <AlertTriangle size={12} className="text-red-400" />
-              <span className="text-xs font-bold text-red-400">
-                {alarmCount} ALARM
-              </span>
+              <span className="text-xs font-bold text-red-400">{alarmCount} ALARM</span>
             </div>
           )}
 
           {walletAddress ? (
             <div
               className="flex items-center gap-2 px-3 py-2 rounded-xl"
-              style={{
-                background: "rgba(34,197,94,0.1)",
-                border: "1px solid rgba(34,197,94,0.3)",
-              }}
+              style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)" }}
             >
               <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-xs font-mono text-green-400">
-                {shortAddress(walletAddress)}
-              </span>
+              <span className="text-xs font-mono text-green-400">{shortAddress(walletAddress)}</span>
             </div>
           ) : (
             <button
@@ -1190,11 +1512,7 @@ const Dashboard = () => {
                 color: "white",
               }}
             >
-              {walletLoading ? (
-                <RefreshCw size={14} className="animate-spin" />
-              ) : (
-                <Wallet size={14} />
-              )}
+              {walletLoading ? <RefreshCw size={14} className="animate-spin" /> : <Wallet size={14} />}
               {walletLoading ? "Bağlanıyor..." : "Monad Cüzdanı Bağla"}
             </button>
           )}
@@ -1226,7 +1544,6 @@ const Dashboard = () => {
             backdropFilter: "blur(20px)",
           }}
         >
-          {/* Nav Items */}
           <nav className="p-4 space-y-2 flex-1">
             <p
               className="text-xs font-semibold tracking-widest uppercase px-2 mb-3"
@@ -1240,55 +1557,29 @@ const Dashboard = () => {
                 onClick={() => setActiveTab(id)}
                 className="w-full text-left p-3 rounded-xl transition-all duration-200 group"
                 style={{
-                  background:
-                    activeTab === id
-                      ? "rgba(124,58,237,0.2)"
-                      : "transparent",
-                  border:
-                    activeTab === id
-                      ? "1px solid rgba(167,139,250,0.35)"
-                      : "1px solid transparent",
+                  background: activeTab === id ? "rgba(124,58,237,0.2)" : "transparent",
+                  border: activeTab === id ? "1px solid rgba(167,139,250,0.35)" : "1px solid transparent",
                 }}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className="p-2 rounded-lg transition-all"
                     style={{
-                      background:
-                        activeTab === id
-                          ? "rgba(124,58,237,0.3)"
-                          : "rgba(255,255,255,0.04)",
+                      background: activeTab === id ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.04)",
                     }}
                   >
-                    <Icon
-                      size={15}
-                      style={{
-                        color: activeTab === id ? "#c4b5fd" : "#6b7280",
-                      }}
-                    />
+                    <Icon size={15} style={{ color: activeTab === id ? "#c4b5fd" : "#6b7280" }} />
                   </div>
                   <div>
-                    <p
-                      className="text-xs font-semibold"
-                      style={{
-                        color: activeTab === id ? "#e9d5ff" : "#9ca3af",
-                      }}
-                    >
+                    <p className="text-xs font-semibold" style={{ color: activeTab === id ? "#e9d5ff" : "#9ca3af" }}>
                       {label}
                     </p>
-                    <p
-                      className="text-xs mt-0.5"
-                      style={{ color: activeTab === id ? "#7c3aed" : "#4b5563" }}
-                    >
+                    <p className="text-xs mt-0.5" style={{ color: activeTab === id ? "#7c3aed" : "#4b5563" }}>
                       {sublabel}
                     </p>
                   </div>
                   {activeTab === id && (
-                    <ChevronRight
-                      size={14}
-                      className="ml-auto"
-                      style={{ color: "#a78bfa" }}
-                    />
+                    <ChevronRight size={14} className="ml-auto" style={{ color: "#a78bfa" }} />
                   )}
                 </div>
               </button>
@@ -1325,26 +1616,18 @@ const Dashboard = () => {
 
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-y-auto p-6">
-          {/* Page Header */}
           <div className="mb-6">
             <h2 className="text-xl font-bold text-white mb-1">
-              {activeTab === "engineer"
-                ? "Mühendis Doğrulama UI"
-                : "Üretici Giriş Paneli"}
+              {pageHeaders[activeTab].title}
             </h2>
             <p className="text-xs" style={{ color: "#7c3aed" }}>
-              {activeTab === "engineer"
-                ? "Monad blockchain üzerinde komponent doğrulama ve sahte ürün tespiti"
-                : "Yeni yarı iletken komponentleri IDPP'ye kayıt et — AB DPP uyumlu"}
+              {pageHeaders[activeTab].sub}
             </p>
           </div>
 
-          {/* Tab Content */}
-          {activeTab === "engineer" ? (
-            <EngineerTab />
-          ) : (
-            <ManufacturerTab walletAddress={walletAddress} />
-          )}
+          {activeTab === "engineer" && <EngineerTab />}
+          {activeTab === "manufacturer" && <ManufacturerTab walletAddress={walletAddress} />}
+          {activeTab === "distributor" && <DistributorTab walletAddress={walletAddress} />}
         </main>
       </div>
     </div>
